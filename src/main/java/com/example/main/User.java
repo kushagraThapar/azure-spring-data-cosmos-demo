@@ -5,7 +5,7 @@ package com.example.main;
 import com.azure.spring.data.cosmos.core.mapping.Container;
 import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
 
-@Container(containerName = "myContainer", ru = "400")
+@Container(containerName = "${dynamic.collection.name}", ru = "400")
 public class User {
     private String id;
     private String firstName;

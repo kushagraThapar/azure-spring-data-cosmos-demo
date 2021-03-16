@@ -8,11 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.DependsOn;
 import reactor.core.publisher.Flux;
 
 import java.util.Iterator;
 
 @SpringBootApplication
+@DependsOn("expressionResolver")
 public class SampleApplication implements CommandLineRunner {
 
     private final Logger logger = LoggerFactory.getLogger(SampleApplication.class);
