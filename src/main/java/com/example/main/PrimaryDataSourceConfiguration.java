@@ -12,6 +12,7 @@ import com.azure.spring.data.cosmos.core.ReactiveCosmosTemplate;
 import com.azure.spring.data.cosmos.core.ResponseDiagnostics;
 import com.azure.spring.data.cosmos.core.ResponseDiagnosticsProcessor;
 import com.azure.spring.data.cosmos.core.convert.MappingCosmosConverter;
+import com.azure.spring.data.cosmos.core.mapping.EnableCosmosAuditing;
 import com.azure.spring.data.cosmos.repository.config.EnableCosmosRepositories;
 import com.azure.spring.data.cosmos.repository.config.EnableReactiveCosmosRepositories;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import org.springframework.lang.Nullable;
 @EnableCosmosRepositories(basePackages = "com.example.main.repository.db1", cosmosTemplateRef = "primaryDatabaseTemplate")
 @EnableReactiveCosmosRepositories(basePackages = "com.example.main.repository.db1", reactiveCosmosTemplateRef = "primaryDatabaseReactiveTemplate")
 @PropertySource("classpath:application.properties")
+@EnableCosmosAuditing
 public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(PrimaryDataSourceConfiguration.class);
 
