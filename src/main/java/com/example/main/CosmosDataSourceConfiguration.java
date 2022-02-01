@@ -2,44 +2,42 @@
 // Licensed under the MIT License.
 package com.example.main;
 
-import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.DirectConnectionConfig;
 import com.azure.spring.data.cosmos.config.AbstractCosmosConfiguration;
 import com.azure.spring.data.cosmos.config.CosmosConfig;
-import com.azure.spring.data.cosmos.core.CosmosTemplate;
-import com.azure.spring.data.cosmos.core.ReactiveCosmosTemplate;
 import com.azure.spring.data.cosmos.core.ResponseDiagnostics;
 import com.azure.spring.data.cosmos.core.ResponseDiagnosticsProcessor;
-import com.azure.spring.data.cosmos.core.convert.MappingCosmosConverter;
 import com.azure.spring.data.cosmos.core.mapping.EnableCosmosAuditing;
 import com.azure.spring.data.cosmos.repository.config.EnableCosmosRepositories;
 import com.azure.spring.data.cosmos.repository.config.EnableReactiveCosmosRepositories;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.lang.Nullable;
 
+import java.time.Duration;
+
 @Configuration
-@EnableCosmosRepositories(basePackages = "com.example.main.repository.db1", cosmosTemplateRef = "primaryDatabaseTemplate")
-@EnableReactiveCosmosRepositories(basePackages = "com.example.main.repository.db1", reactiveCosmosTemplateRef = "primaryDatabaseReactiveTemplate")
+@EnableConfigurationProperties(CosmosProperties.class)
+@EnableCosmosRepositories()
+@EnableReactiveCosmosRepositories()
 @PropertySource("classpath:application.properties")
 @EnableCosmosAuditing
-public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration {
-    private static final Logger logger = LoggerFactory.getLogger(PrimaryDataSourceConfiguration.class);
+public class CosmosDataSourceConfiguration extends AbstractCosmosConfiguration {
+    private static final Logger logger = LoggerFactory.getLogger(CosmosDataSourceConfiguration.class);
 
-    @Bean
-    @ConfigurationProperties(prefix = "azure.cosmos.primary")
-    public CosmosProperties primary() {
-        return new CosmosProperties();
+    final CosmosProperties cosmosProperties;
+
+    public CosmosDataSourceConfiguration(CosmosProperties cosmosProperties) {
+        this.cosmosProperties = cosmosProperties;
     }
 
     @Bean
-    public CosmosClientBuilder primaryCosmosClientBuilder(@Qualifier("primary") CosmosProperties cosmosProperties) {
+    public CosmosClientBuilder cosmosClientBuilder() {
         DirectConnectionConfig directConnectionConfig = DirectConnectionConfig.getDefaultConfig();
         return new CosmosClientBuilder()
             .endpoint(cosmosProperties.getUri())
@@ -48,25 +46,11 @@ public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration 
     }
 
     @Bean
-    public CosmosConfig cosmosConfig(@Qualifier("primary") CosmosProperties cosmosProperties) {
+    public CosmosConfig cosmosConfig() {
         return CosmosConfig.builder()
                            .responseDiagnosticsProcessor(new ResponseDiagnosticsProcessorImplementation())
                            .enableQueryMetrics(cosmosProperties.isQueryMetricsEnabled())
                            .build();
-    }
-
-    @Bean
-    public ReactiveCosmosTemplate primaryDatabaseReactiveTemplate(CosmosAsyncClient cosmosAsyncClient,
-                                                          CosmosConfig cosmosConfig,
-                                                          MappingCosmosConverter mappingCosmosConverter) {
-        return new ReactiveCosmosTemplate(cosmosAsyncClient, getDatabaseName(), cosmosConfig, mappingCosmosConverter);
-    }
-
-    @Bean
-    public CosmosTemplate primaryDatabaseTemplate(CosmosAsyncClient cosmosAsyncClient,
-                                                  CosmosConfig cosmosConfig,
-                                                  MappingCosmosConverter mappingCosmosConverter) {
-        return new CosmosTemplate(cosmosAsyncClient, getDatabaseName(), cosmosConfig, mappingCosmosConverter);
     }
 
     protected String getDatabaseName() {

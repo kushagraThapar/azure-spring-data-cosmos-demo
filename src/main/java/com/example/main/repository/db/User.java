@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-package com.example.main.repository.db2;
+package com.example.main.repository.db;
 
 import com.azure.spring.data.cosmos.core.mapping.Container;
 import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
 
-@Container(containerName = "${azure.cosmos.secondary.dynamic.collection.name}", ru = "400")
-public class User2 {
+@Container(containerName = "${azure.cosmos.primary.dynamic.collection.name}", ru = "400")
+public class User {
     private String id;
     private String firstName;
 
@@ -14,9 +14,9 @@ public class User2 {
     @PartitionKey
     private String lastName;
 
-    public User2() {}
+    public User() {}
 
-    public User2(String id, String firstName, String lastName) {
+    public User(String id, String firstName, String lastName) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;

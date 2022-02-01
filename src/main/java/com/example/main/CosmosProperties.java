@@ -4,7 +4,7 @@ package com.example.main;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "azure.cosmos")
+@ConfigurationProperties(prefix = "azure.cosmos.primary")
 public class CosmosProperties {
 
     private String uri;
