@@ -95,6 +95,10 @@ public class SampleApplication implements CommandLineRunner {
         List<User> findUsersByQueryAnnotation = userRepository.findUsersByQueryAnnotation("testLastName3");
         logger.info("Found {} users by query annotation", findUsersByQueryAnnotation.size());
 
+        logger.info("Getting exception diagnostics");
+        Optional<User> something = userRepository.findById("wrong-id", new PartitionKey("wrong-key"));
+        logger.info("Found user : {}", something.isPresent());
+
         logger.info("Using reactive repository");
 
         Flux<User> users1 = reactiveUserRepository.findByFirstName("testFirstName");
