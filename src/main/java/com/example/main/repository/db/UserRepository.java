@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends CosmosRepository<User, String> {
 
-    List<User> findByFirstName(String firstName);
+    List<User> findByFirstNameAndLastName(String firstName, String lastName);
 
     List<User> findByLastName(String lastName);
 

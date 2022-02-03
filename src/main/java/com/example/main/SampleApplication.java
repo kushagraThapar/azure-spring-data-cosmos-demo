@@ -60,10 +60,10 @@ public class SampleApplication implements CommandLineRunner {
 
         logger.info("Using sync repository");
 
-//        userRepository.deleteAll();
-//
-//        logger.info("Saving all users");
-//        userRepository.saveAll(users);
+        //        userRepository.deleteAll();
+        //
+        //        logger.info("Saving all users");
+        //        userRepository.saveAll(users);
 
         logger.info("Finding user by id and partition key - point read call");
         final Optional<User> result1 = userRepository.findById(testUser1.getId(),
@@ -86,7 +86,7 @@ public class SampleApplication implements CommandLineRunner {
         });
 
         logger.info("Finding all users by partition key again to check query plan cache");
-        findAllUsers = userRepository.findAll(new PartitionKey("testLastName1"));
+        findAllUsers = userRepository.findAll(new PartitionKey("testLastName2"));
         findAllUsers.forEach(user -> {
             logger.info("Found user : {}", user);
         });

@@ -4,6 +4,7 @@ package com.example.main;
 
 import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.DirectConnectionConfig;
+import com.azure.cosmos.GatewayConnectionConfig;
 import com.azure.spring.data.cosmos.config.AbstractCosmosConfiguration;
 import com.azure.spring.data.cosmos.config.CosmosConfig;
 import com.azure.spring.data.cosmos.core.ResponseDiagnostics;
@@ -39,10 +40,13 @@ public class CosmosDataSourceConfiguration extends AbstractCosmosConfiguration {
     @Bean
     public CosmosClientBuilder cosmosClientBuilder() {
         DirectConnectionConfig directConnectionConfig = DirectConnectionConfig.getDefaultConfig();
+//        directConnectionConfig.setConnectTimeout(Duration.ofSeconds(10));
+        GatewayConnectionConfig gatewayConnectionConfig = GatewayConnectionConfig.getDefaultConfig();
+//        gatewayConnectionConfig.setMaxConnectionPoolSize(500);
         return new CosmosClientBuilder()
             .endpoint(cosmosProperties.getUri())
             .key(cosmosProperties.getKey())
-            .directMode(directConnectionConfig);
+            .directMode(directConnectionConfig, gatewayConnectionConfig);
     }
 
     @Bean
