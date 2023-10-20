@@ -9,8 +9,8 @@
   <version>1.0-SNAPSHOT</version>
 
   <properties>
-    <spring.boot.version>2.6.2</spring.boot.version>
-    <azure.spring.data.cosmos.version>3.17.0</azure.spring.data.cosmos.version>
+    <spring.boot.version>2.7.14</spring.boot.version>
+    <azure.spring.data.cosmos.version>3.38.0</azure.spring.data.cosmos.version>
   </properties>
 
   <dependencies>

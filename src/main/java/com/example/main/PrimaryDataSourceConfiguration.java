@@ -2,9 +2,14 @@
 // Licensed under the MIT License.
 package com.example.main;
 
+import com.azure.core.util.Context;
 import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosClientBuilder;
+import com.azure.cosmos.CosmosDiagnosticsContext;
+import com.azure.cosmos.CosmosDiagnosticsHandler;
+import com.azure.cosmos.CosmosDiagnosticsThresholds;
 import com.azure.cosmos.DirectConnectionConfig;
+import com.azure.cosmos.models.CosmosClientTelemetryConfig;
 import com.azure.spring.data.cosmos.config.AbstractCosmosConfiguration;
 import com.azure.spring.data.cosmos.config.CosmosConfig;
 import com.azure.spring.data.cosmos.core.CosmosTemplate;
@@ -23,6 +28,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.lang.Nullable;
+
+import java.time.Duration;
+import java.util.function.BiPredicate;
 
 @Configuration
 @EnableCosmosRepositories(basePackages = "com.example.main.repository.db1", cosmosTemplateRef = "primaryDatabaseTemplate")
@@ -44,7 +52,31 @@ public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration 
         return new CosmosClientBuilder()
             .endpoint(cosmosProperties.getUri())
             .key(cosmosProperties.getKey())
+            .clientTelemetryConfig(getCosmosTelemetryConfig())
             .directMode(directConnectionConfig);
+    }
+
+    private CosmosClientTelemetryConfig getCosmosTelemetryConfig() {
+        CosmosClientTelemetryConfig cosmosClientTelemetryConfig = new CosmosClientTelemetryConfig();
+        cosmosClientTelemetryConfig.enableTransportLevelTracing();
+        cosmosClientTelemetryConfig.diagnosticsHandler((diagnosticsContext, traceContext) -> logger.info("handleDiagnostics {}",
+            diagnosticsContext.getDiagnostics()));
+        cosmosClientTelemetryConfig.diagnosticsThresholds(getDiagnosticThresholds());
+        return cosmosClientTelemetryConfig;
+    }
+
+    private CosmosDiagnosticsThresholds getDiagnosticThresholds() {
+        CosmosDiagnosticsThresholds cosmosDiagnosticsThresholds = new CosmosDiagnosticsThresholds();
+        cosmosDiagnosticsThresholds.setRequestChargeThreshold(1000.0f);
+        cosmosDiagnosticsThresholds.setPointOperationLatencyThreshold(Duration.ofMillis(10000));
+        cosmosDiagnosticsThresholds.setNonPointOperationLatencyThreshold(Duration.ofMillis(10000));
+        cosmosDiagnosticsThresholds.setFailureHandler(new BiPredicate<Integer, Integer>() {
+            @Override
+            public boolean test(Integer statusCode, Integer subStatusCode) {
+                return statusCode >= 400;
+            }
+        });
+        return cosmosDiagnosticsThresholds;
     }
 
     @Bean
@@ -77,7 +109,7 @@ public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration 
 
         @Override
         public void processResponseDiagnostics(@Nullable ResponseDiagnostics responseDiagnostics) {
-            logger.info("Response Diagnostics {}", responseDiagnostics);
+//            logger.info("Response Diagnostics {}", responseDiagnostics);
         }
     }
 }

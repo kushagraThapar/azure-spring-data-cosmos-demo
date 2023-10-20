@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.DependsOn;
 import reactor.core.publisher.Flux;
 
@@ -38,6 +39,9 @@ public class SampleApplication implements CommandLineRunner {
 
     @Autowired
     private ReactiveUserRepository2 reactiveUserRepository2;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     public static void main(String[] args) {
         SpringApplication.run(SampleApplication.class, args);

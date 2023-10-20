@@ -75,7 +75,7 @@ public class SecondaryDataSourceConfiguration {
 
         @Override
         public void processResponseDiagnostics(@Nullable ResponseDiagnostics responseDiagnostics) {
-            logger.info("Response Diagnostics {}", responseDiagnostics);
+//            logger.info("Response Diagnostics {}", responseDiagnostics);
         }
     }
 }
