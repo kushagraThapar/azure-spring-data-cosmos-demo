@@ -17,6 +17,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Primary;
 import reactor.core.publisher.Flux;
 
 import java.util.Iterator;
@@ -39,6 +40,9 @@ public class SampleApplication implements CommandLineRunner {
 
     @Autowired
     private ReactiveUserRepository2 reactiveUserRepository2;
+
+    @Autowired
+    private PrimaryDataSourceConfiguration primaryDataSourceConfiguration;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -91,6 +95,9 @@ public class SampleApplication implements CommandLineRunner {
         while (usersIterator2.hasNext()) {
             logger.info("user is : {}", usersIterator2.next());
         }
+
+        logger.info("Updating the key now");
+        this.primaryDataSourceConfiguration.getAzureKeyCredential().update("Invalid key");
 
         logger.info("Using reactive repository");
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.example.main;
 
+import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.util.Context;
 import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosClientBuilder;
@@ -40,6 +41,8 @@ import java.util.function.BiPredicate;
 public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(PrimaryDataSourceConfiguration.class);
 
+    private AzureKeyCredential azureKeyCredential;
+
     @Bean
     @ConfigurationProperties(prefix = "azure.cosmos.primary")
     public CosmosProperties primary() {
@@ -49,9 +52,10 @@ public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration 
     @Bean
     public CosmosClientBuilder primaryCosmosClientBuilder(@Qualifier("primary") CosmosProperties cosmosProperties) {
         DirectConnectionConfig directConnectionConfig = DirectConnectionConfig.getDefaultConfig();
+        this.azureKeyCredential = new AzureKeyCredential(cosmosProperties.getKey());
         return new CosmosClientBuilder()
             .endpoint(cosmosProperties.getUri())
-            .key(cosmosProperties.getKey())
+            .credential(azureKeyCredential)
             .clientTelemetryConfig(getCosmosTelemetryConfig())
             .directMode(directConnectionConfig);
     }
@@ -111,5 +115,9 @@ public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration 
         public void processResponseDiagnostics(@Nullable ResponseDiagnostics responseDiagnostics) {
 //            logger.info("Response Diagnostics {}", responseDiagnostics);
         }
+    }
+
+    public AzureKeyCredential getAzureKeyCredential() {
+        return azureKeyCredential;
     }
 }
