@@ -71,22 +71,22 @@ public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration 
 
     private CosmosDiagnosticsThresholds getDiagnosticThresholds() {
         CosmosDiagnosticsThresholds cosmosDiagnosticsThresholds = new CosmosDiagnosticsThresholds();
-        cosmosDiagnosticsThresholds.setRequestChargeThreshold(1000.0f);
-        cosmosDiagnosticsThresholds.setPointOperationLatencyThreshold(Duration.ofMillis(10000));
-        cosmosDiagnosticsThresholds.setNonPointOperationLatencyThreshold(Duration.ofMillis(10000));
-        cosmosDiagnosticsThresholds.setFailureHandler(new BiPredicate<Integer, Integer>() {
-            @Override
-            public boolean test(Integer statusCode, Integer subStatusCode) {
-                return statusCode >= 400;
-            }
-        });
+        //cosmosDiagnosticsThresholds.setRequestChargeThreshold(100.0f);
+        cosmosDiagnosticsThresholds.setPointOperationLatencyThreshold(Duration.ofSeconds(1));
+        cosmosDiagnosticsThresholds.setNonPointOperationLatencyThreshold(Duration.ofSeconds(3));
+//        cosmosDiagnosticsThresholds.setFailureHandler(new BiPredicate<Integer, Integer>() {
+//            @Override
+//            public boolean test(Integer statusCode, Integer subStatusCode) {
+//                return statusCode >= 400;
+//            }
+//        });
         return cosmosDiagnosticsThresholds;
     }
 
     @Bean
     public CosmosConfig cosmosConfig(@Qualifier("primary") CosmosProperties cosmosProperties) {
         return CosmosConfig.builder()
-                           .responseDiagnosticsProcessor(new ResponseDiagnosticsProcessorImplementation())
+//                           .responseDiagnosticsProcessor(new ResponseDiagnosticsProcessorImplementation())
                            .enableQueryMetrics(cosmosProperties.isQueryMetricsEnabled())
                            .build();
     }
@@ -109,13 +109,13 @@ public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration 
         return "testdb";
     }
 
-    private static class ResponseDiagnosticsProcessorImplementation implements ResponseDiagnosticsProcessor {
-
-        @Override
-        public void processResponseDiagnostics(@Nullable ResponseDiagnostics responseDiagnostics) {
+//    private static class ResponseDiagnosticsProcessorImplementation implements ResponseDiagnosticsProcessor {
+//
+//        @Override
+//        public void processResponseDiagnostics(@Nullable ResponseDiagnostics responseDiagnostics) {
 //            logger.info("Response Diagnostics {}", responseDiagnostics);
-        }
-    }
+//        }
+//    }
 
     public AzureKeyCredential getAzureKeyCredential() {
         return azureKeyCredential;
