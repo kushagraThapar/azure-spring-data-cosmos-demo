@@ -21,10 +21,15 @@ import com.azure.spring.data.cosmos.core.convert.MappingCosmosConverter;
 import com.azure.spring.data.cosmos.core.mapping.EnableCosmosAuditing;
 import com.azure.spring.data.cosmos.repository.config.EnableCosmosRepositories;
 import com.azure.spring.data.cosmos.repository.config.EnableReactiveCosmosRepositories;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.math.ec.ECCurve;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -38,6 +43,9 @@ import java.util.function.BiPredicate;
 @EnableReactiveCosmosRepositories(basePackages = "com.example.main.repository.db1", reactiveCosmosTemplateRef = "primaryDatabaseReactiveTemplate")
 @PropertySource("classpath:application.properties")
 @EnableCosmosAuditing
+@Slf4j
+@Data
+@RefreshScope
 public class PrimaryDataSourceConfiguration extends AbstractCosmosConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(PrimaryDataSourceConfiguration.class);
 

@@ -2,16 +2,27 @@
 // Licensed under the MIT License.
 package com.example.main;
 
+import com.azure.cosmos.ChangeFeedProcessor;
+import com.azure.cosmos.ChangeFeedProcessorBuilder;
+import com.azure.cosmos.CosmosAsyncClient;
+import com.azure.cosmos.CosmosAsyncContainer;
+import com.azure.cosmos.CosmosAsyncDatabase;
+import com.azure.cosmos.models.ChangeFeedProcessorItem;
+import com.azure.cosmos.models.ChangeFeedProcessorOptions;
 import com.azure.cosmos.models.PartitionKey;
+import com.azure.spring.data.cosmos.core.CosmosTemplate;
+import com.azure.spring.data.cosmos.core.ReactiveCosmosTemplate;
 import com.example.main.repository.db1.ReactiveUserRepository1;
 import com.example.main.repository.db1.User1;
 import com.example.main.repository.db1.UserRepository1;
 import com.example.main.repository.db2.ReactiveUserRepository2;
 import com.example.main.repository.db2.User2;
 import com.example.main.repository.db2.UserRepository2;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,8 +30,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 @SpringBootApplication
@@ -47,17 +63,60 @@ public class SampleApplication implements CommandLineRunner {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Autowired
+    private CosmosTemplate cosmosTemplate;
+
+    @Autowired
+    private ReactiveCosmosTemplate reactiveCosmosTemplate;
+
     public static void main(String[] args) {
         SpringApplication.run(SampleApplication.class, args);
     }
 
     public void run(String... var1) {
 
-        final User1 testUser11 = new User1("testId1", "testFirstName", "testLastName1");
-        final User1 testUser12 = new User1("testId2", "testFirstName", "testLastName2");
+        ChangeFeedProcessorOptions changeFeedProcessorOptions = new ChangeFeedProcessorOptions();
+        changeFeedProcessorOptions.setStartFromBeginning(true);
+        changeFeedProcessorOptions.setLeasePrefix("SOME_PREFIX");
+        changeFeedProcessorOptions.setFeedPollDelay(Duration.ofMillis(0L).plusSeconds(5));
 
-        final User2 testUser21 = new User2("testId1", "testFirstName", "testLastName1");
-        final User2 testUser22 = new User2("testId2", "testFirstName", "testLastName2");
+        CosmosAsyncClient cac = primaryDataSourceConfiguration
+                .primaryCosmosClientBuilder(new CosmosProperties()).buildAsyncClient();
+        CosmosAsyncContainer cosmosMonitoredContainer = cac.getDatabase(primaryDataSourceConfiguration.getDatabaseName())
+                .getContainer(reactiveCosmosTemplate.getContainerName(User1.class));
+        cac.getDatabase(primaryDataSourceConfiguration.getDatabaseName())
+                .createContainerIfNotExists("targetContainer", "/id").block();
+        CosmosAsyncContainer cosmosTargetContainer = cac.getDatabase(primaryDataSourceConfiguration.getDatabaseName())
+                .getContainer("targetContainer");
+        cac.getDatabase(primaryDataSourceConfiguration.getDatabaseName())
+                .createContainerIfNotExists("leaseContainer", "/id").block();
+        CosmosAsyncContainer leaseTargetContainer = cac.getDatabase(primaryDataSourceConfiguration.getDatabaseName())
+                .getContainer("leaseContainer");
+        try {
+            ChangeFeedProcessor cfp = new ChangeFeedProcessorBuilder().options(changeFeedProcessorOptions)
+                .hostName(InetAddress.getLocalHost().getHostName())
+                .feedContainer(cosmosMonitoredContainer).leaseContainer(leaseTargetContainer)
+                .handleChanges((List<JsonNode> docs) -> {
+
+                    docs.forEach(doc -> {
+                        cosmosTargetContainer.upsertItem(new User1(doc.get("id").toString(),
+                                doc.get("firstName").toString(), doc.get("lastName").toString())).block();
+                    });
+
+                }).buildChangeFeedProcessor();
+
+            cfp.start().subscribeOn(Schedulers.boundedElastic())
+                    .timeout(Duration.ofMillis(2 * 2500))
+                    .subscribe();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+
+        final User1 testUser11 = new User1("testId1", "testFirstNameA", "testLastName1");
+        final User1 testUser12 = new User1("testId2", "testFirstNameA", "testLastName2");
+
+        final User2 testUser21 = new User2("testId3", "testFirstNameB", "testLastName1");
+        final User2 testUser22 = new User2("testId4", "testFirstNameB", "testLastName2");
 
         logger.info("Using sync repository");
 
