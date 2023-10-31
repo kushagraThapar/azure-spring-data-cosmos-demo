@@ -6,8 +6,6 @@ import com.azure.cosmos.ChangeFeedProcessor;
 import com.azure.cosmos.ChangeFeedProcessorBuilder;
 import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosAsyncContainer;
-import com.azure.cosmos.CosmosAsyncDatabase;
-import com.azure.cosmos.models.ChangeFeedProcessorItem;
 import com.azure.cosmos.models.ChangeFeedProcessorOptions;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.spring.data.cosmos.core.CosmosTemplate;
@@ -28,7 +26,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Primary;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
@@ -80,8 +77,7 @@ public class SampleApplication implements CommandLineRunner {
         changeFeedProcessorOptions.setLeasePrefix("SOME_PREFIX");
         changeFeedProcessorOptions.setFeedPollDelay(Duration.ofMillis(0L).plusSeconds(5));
 
-        CosmosAsyncClient cac = primaryDataSourceConfiguration
-                .primaryCosmosClientBuilder(new CosmosProperties()).buildAsyncClient();
+        CosmosAsyncClient cac = applicationContext.getBean("cosmosAsyncClient", CosmosAsyncClient.class);
         CosmosAsyncContainer cosmosMonitoredContainer = cac.getDatabase(primaryDataSourceConfiguration.getDatabaseName())
                 .getContainer(reactiveCosmosTemplate.getContainerName(User1.class));
         cac.getDatabase(primaryDataSourceConfiguration.getDatabaseName())
